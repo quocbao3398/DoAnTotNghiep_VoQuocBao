@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<title>ADMIN</title>
+	<!-- Load Bootstrap CSS -->
+	<link type="text/css" rel="stylesheet" href="/public/css/bootstrap.min.css" />
+	<link type="text/css" rel="stylesheet" href="/public/css/style.css" />
+	
+</head>
+<body>
+	<div class="container-fluid">
+  		<div class="row content">
+    		<div class="col-sm-3 sidenav">
+      			<h4>GIS</h4>
+      				<ul class="nav nav-pills nav-stacked">
+			        <li class="active"><a href="../hodan/list">Home</a></li>
+			        <li><a href="../../">Map</a></li>
+                    <li><a href="../hodan/them">INSERT</a></li>
+			        
+      				</ul>
+	  		</div>
+	  		<div class="container"  style="width: 220px; padding-right: 15px; margin-left: 330px;"  >      
+	  			
+			  <table class="table table-hover" style="width: auto;">
+			    <thead>
+			      <tr>
+			        <th>ID</th>
+					<th>Tên chủ hộ</th>
+					<th>Địa chỉ</th>
+					<th>Tình trạng</th>
+					<th>Số thành viên</th>
+					<th>Ngày đăng ký</th>
+                    <th>GEOM</th>
+                    <th ><button style="width:80px; height:40px;" onclick="window.location.href = '../hodan/them'" class="glyphicon glyphicon-plus btn btn-primary btn-xs"></button><br><br>
+                    </th>
+			      </tr>
+			    </thead>
+			    <tbody>
+			     <% danhsach.rows.forEach(function(hd){ %>
+
+                    <tr>
+                        <td><%= hd.gid %></td>
+                        <td><%= hd.ten_chu_ho %></td>
+                        <td><%= hd.dia_chi %></td>
+                        <td><%= hd.tinhtrang %></td>
+                        <td><%= hd.thanh_vien %></td>
+                        <td><%= hd.ngaydk %></td>
+                        <td><%= hd.geom %></td>
+                       
+                        <td>
+						<button onclick="window.location.href = '../hodan/sua/<%= hd.gid %>';" class="glyphicon glyphicon-pencil btn btn-default btn-xs btn-detail"  id="btn-edit">Sửa</button>
+						<button onclick="window.location.href = '../hodan/xoa/<%= hd.gid %>';" class="glyphicon glyphicon-remove btn btn-danger btn-xs btn-delete">Xóa</button>
+					    </td>
+                    </tr>
+
+                    <%  }); %>
+
+			      </tbody>
+			    </table>
+			</div>
+		</div>
+	</div>
+	  	
+	
+	<script type="text/javascript" src="/public/js/jquery.min.js"></script>
+	<script type="text/javascript" src="/public/js/bootstrap.min.js"></script>
+	<!-- <script type="text/javascript">
+	$(document).ready(function () {
+		$("#btn-add,#btn-edit").click(function () {
+			$('#myModal').modal('show')
+		});
+	});
+	</script> -->
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>GIS</title>
+    <meta charset="utf-8">
+    <link rel="icon" type="image/png" href="img/ico_gis.png" sizes="32x32">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/index.css">
+    <link rel="stylesheet" href="css/srollbar.css">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/ol-debug.js"></script>
+    <script type="text/javascript" src="js/ol-deps.js"></script>
+    <script type="text/javascript" src="js/ol.js"></script>
+
+</head>
+
+<body>
+    <!-- NHAP KHU VUC -->
+    <!-- area > 
+    <form>
+        <textarea id="area"></textarea>
+        <input type="button" value="OK" onclick="addCqlLayer();">
+    
+        </input> -->
+    </form>
+    <div class="container">
+        <div class="row">
+            <nav class="navbar navbar-default">
+                <div class="container-fluid">
+                    <!-- Home-->
+                    <a class="navbar-brand glyphicon glyphicon-home" href="#"></a>
+                    <form class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <!-- Tìm kiếm-->
+                            <!-- <textarea id="area"></textarea > -->
+                            <input type="text" class="form-control" placeholder="Tôi đang tìm kiếm..." id="area" >
+                            <input type="button" class="btn btn-default glyphicon glyphicon-search" value="OK" onclick="addCqlLayer();"></button>
+                            <!--Danh sách thể loại thắng cảnh-->
+                            <div class="dropdown form-group">
+                                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+									Thắng cảnh bạn muốn tìm có ở đây
+									<span class="caret"></span>
+								</button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                    <li class="dropdown-header">
+                                        <h4>Di tích văn hóa</h4>
+                                    </li>
+                                    <li><a href="#">Chùa</a></li>
+                                    <li><a href="#">Nhà cổ</a></li>
+                                    <li><a href="#">Mộ cổ</a></li>
+                                    <li><a href="#">Khu du lịch</a></li>
+                                    <li><a href="#">...</a></li>
+                                    <li role="separator" class="divider"></li>
+                                    <li class="dropdown-header">
+                                        <h4>Di tích lịch sử</h4>
+                                    </li>
+                                    <li><a href="#">Chiến khu</a></li>
+                                    <li><a href="#">Tượng đài</a></li>
+                                    <li><a href="#">...</a></li>
+                                </ul>
+                            </div>
+                            <!--Tuỳ chỉnh layer-->
+                            <div class="dropdown form-group">
+                                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+									Bạn có thể tuỳ chỉnh layer ở đây
+									<span class="caret"></span>
+								</button>
+                                <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+                                    <li class="dropdown-header">
+                                        <h4>Các tầng layers</h4>
+                                    </li>
+                                    <li><input type="checkbox" id="chk_openstreetmap" checked /><label for="chk_openstreetmap">Open Street map</label></li>
+                                    <li><input type="checkbox" id="chk_vungtdm" checked /><label for="chk_vungtdm">Ranh giới khu vực phường</label></li>
+                                    <li><input type="checkbox" id="chk_duongtdm" checked /><label for="chk_duongtdm">Đường ở Thủ Dầu Một</label></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </nav>
+            <div class="col-sm-7 map " id="map">
+                <div id="popup" class="ol-popup">
+                    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                    <div id="popup-content"></div>
+                    <div id="ol-popup-closer"></div>
+                </div>
+            </div>
+            <div class="col-sm-5 information scrollbar " id="information">
+            </div>
+
+            <div class="col-sm-12 footer">
+                <div class="col-sm-5">
+                    <audio controls>
+			<source src="img/baicakhongquen.mp3" type="audio/mpeg">
+			</audio>
+                </div>
+                <!-- <div class="col-sm-7 staff">
+                    <b>Thành viên thực hiện:    </b>
+                    <a href="https://www.facebook.com/bao.voquoc.374" target="_blank">Võ Quốc Bảo</a>
+
+
+                </div> -->
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        var styleFunction = function(feature) {
+            return styles[feature.getGeometry().getType()];
+        };
+
+        var vectorLayer = new ol.layer.Vector({
+            style: styleFunction
+        });
+        var format = 'image/png';
+        var bounds = [106.595402, 10.939735,
+            106.71948, 11.111376
+        ];
+        /**
+         * Elements that make up the popup.
+         */
+        var container = document.getElementById('popup');
+        var content = document.getElementById('popup-content');
+        var closer = document.getElementById('popup-closer');
+
+        /**
+         * Create an overlay to anchor the popup to the map.
+         */
+        var overlay = new ol.Overlay( /** @type {olx.OverlayOptions} */ ({
+            element: container,
+            autoPan: true,
+            autoPanAnimation: {
+                duration: 250
+            }
+        }));
+        /**
+         * Add a click handler to hide the popup.
+         * @return {boolean} Don't follow the href.
+         */
+        closer.onclick = function() {
+            overlay.setPosition(undefined);
+            closer.blur();
+            return true;
+        };
+        var untiled_diemditich1 = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                ratio: 1,
+                url: 'http://localhost:8080/geoserver/GIS1/wms',
+                params: {
+                    'FORMAT': format,
+                    'VERSION': '1.1.1',
+                    STYLES: '',
+                    LAYERS: 'GIS1:diemditich1_font_point1',
+                }
+            })
+        });
+        var untiled_vungranhgioiphuong = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                ratio: 1,
+                url: 'http://localhost:8080/geoserver/GIS2/wms',
+                params: {
+                    'FORMAT': format,
+                    'VERSION': '1.1.1',
+                    STYLES: '',
+                    LAYERS: 'GIS2:vungranhgioiphuongtxtdm_region2',
+                    // layerName: 'tenphuong',
+                }
+            })
+            
+        });
+        var untiled_duongtdm = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                ratio: 1,
+                url: 'http://localhost:8080/geoserver/GIS1/wms',
+                params: {
+                    'FORMAT': format,
+                    'VERSION': '1.1.1',
+                    STYLES: '',
+                    LAYERS: 'GIS1:duong_tdm_polyline',
+                    layerName: 'tenduong',
+                }
+            })
+        });
+        var basemap = new ol.layer.Tile({
+            source: new ol.source.OSM()
+        });
+        var projection = new ol.proj.Projection({
+            code: 'EPSG:4326',
+            units: 'degrees',
+            axisOrientation: 'neu',
+            global: true
+        });
+        var view = new ol.View({
+            projection: projection,
+            center: [0, 0],
+            zoom: 2
+        });
+        var map = new ol.Map({
+            target: 'map',
+            layers: [
+                basemap,
+                untiled_vungranhgioiphuong,
+                untiled_duongtdm,
+                untiled_diemditich1,
+
+            ],
+            overlays: [overlay],
+            view: view
+        });
+        untiled_duongtdm.setOpacity(0.5);
+        untiled_vungranhgioiphuong.setOpacity(0.7);
+        untiled_diemditich1.setOpacity(0.5);
+        map.getView().fit(bounds, map.getSize());
+        map.addLayer(vectorLayer);
+        // NHAP KHU VUC
+        function addCqlLayer(){
+            
+            var area = document.getElementById("area").value;
+            // var CQLFilter='strToLowerCase(tenphuong) like %' +area+'%';
+            var CQLFilter="tenphuong LIKE '"+area+"%'";
+            var CQLuntiled_vungranhgioiphuong = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                ratio: 1,
+                url: 'http://localhost:8080/geoserver/GIS1/wms',
+                params: {
+                 
+                    'VERSION': '1.1.1',
+                    STYLES: '',
+                    LAYERS: 'GIS1:vungranhgioiphuongtxtdm_region','CQL_Filter': CQLFilter,
+                }
+            })
+            
+        });
+
+
+        var CQLFilter1="tenduong LIKE '"+area+"%'";
+            var CQLuntiled_duongtdm = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                ratio: 1,
+                url: 'http://localhost:8080/geoserver/GIS2/wms',
+                params: {
+                 
+                    'VERSION': '1.1.1',
+                    STYLES: '',
+                    LAYERS: 'GIS1:duong_tdm_polyline2','CQL_Filter': CQLFilter1,
+                }
+            })
+            
+        });
+
+        var CQLFilter1="tenditich LIKE '"+area+"%'";
+            var CQLuntiled_diemtdm = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+                ratio: 1,
+                url: 'http://localhost:8080/geoserver/GIS2/wms',
+                params: {
+                 
+                    'VERSION': '1.1.1',
+                    STYLES: '',
+                    LAYERS: 'GIS2:diemditich1_font_point2','CQL_Filter': CQLFilter1,
+                }
+            })
+            
+        });
+        // var selected_polygon_style = {
+        //     strokeWidth: 5,
+        //     strokeColor: '#ff0000'
+        //     // add more styling key/value pairs as your need
+        // };
+
+        // selectedFeature.style = selected_polygon_style;
+        // layer.addCqlLayer(CQLuntiled_vungranhgioiphuong);
+
+        CQLuntiled_vungranhgioiphuong.setOpacity(1);
+     
+        CQLuntiled_duongtdm.setOpacity(1);
+        CQLuntiled_diemtdm.setOpacity(1);
+        // CQLuntiled_duongtdm.color('#000');
+        map.addLayer(CQLuntiled_vungranhgioiphuong);
+        map.addLayer(CQLuntiled_duongtdm);
+        map.addLayer(CQLuntiled_diemtdm);
+        }
+   
+        // map.name(tenduong);
+//         $("#chk_duongtdm").change(function () {
+//     if($("#chk_duongtdm").is(":checked"))
+//         {
+//             untiled_duongtdm.setVisible(true);
+// }
+// else
+// {
+//     untiled_duongtdm.setVisible(false);
+// }
+// });
+
+        $("#chk_openstreetmap").change(function() {
+            if ($("#chk_openstreetmap").is(":checked")) {
+                basemap.setVisible(true);
+            } else {
+                basemap.setVisible(false);
+            }
+        });
+
+        $("#chk_vungtdm").change(function() {
+            if ($("#chk_vungtdm").is(":checked")) {
+                untiled_vungranhgioiphuong.setVisible(true);
+            } else {
+                untiled_vungranhgioiphuong.setVisible(false);
+            }
+        });
+
+        $("#chk_duongtdm").change(function() {
+            if ($("#chk_duongtdm").is(":checked")) {
+                untiled_duongtdm.setVisible(true);
+            } else {
+                untiled_duongtdm.setVisible(false);
+            }
+        });
+
+        var styles = {
+
+            'MultiPolygon': new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: 'yellow',
+                    width: 100
+                })
+            })
+        };
+      
+
+        map.on('singleclick', function(evt) {
+            document.getElementById('information').innerHTML = "Loading... please wait...";
+            var view = map.getView();
+            var viewResolution = view.getResolution();
+
+
+
+            var source_diem = untiled_diemditich1.getSource();
+            var sourced_duong = untiled_duongtdm.getSource();
+            var sourced_vung = untiled_vungranhgioiphuong.getSource();
+
+
+            var url_diem = source_diem.getGetFeatureInfoUrl(
+                evt.coordinate,
+                viewResolution,
+                view.getProjection(), {
+                    'INFO_FORMAT': 'application/json',
+                    'FEATURE_COUNT': 50
+                });
+
+
+            var url_duong = sourced_duong.getGetFeatureInfoUrl(
+                evt.coordinate,
+                viewResolution,
+                view.getProjection(), {
+                    'INFO_FORMAT': 'application/json',
+                    'FEATURE_COUNT': 200
+                });
+
+            var url_vung = sourced_vung.getGetFeatureInfoUrl(
+                evt.coordinate,
+                viewResolution,
+                view.getProjection(), {
+                    'INFO_FORMAT': 'application/json',
+                    'FEATURE_COUNT': 50
+                });
+
+            var content_popup;
+
+
+            if (url_vung) {
+                $.ajax({
+                    type: "POST",
+                    url: url_vung,
+                    contentType: "application/json; charset=utf-8",
+                    dataType: 'json',
+                    success: function(n1) {
+                        content_popup = "<div>";
+
+                        for (var i = 0; i < n1.features.length; i++) {
+                            var feature = n1.features[i];
+                            var featureAttr = feature.properties;
+
+                            content_popup += "" +
+                                "<h4>Phường: " + featureAttr["tenphuong"] + "</h4>"
+                        }
+
+
+                        if (url_duong) {
+                            $.ajax({
+                                type: "POST",
+                                url: url_duong,
+                                contentType: "application/json; charset=utf-8",
+                                dataType: 'json',
+                                success: function(n3) {
+
+                                    for (var i = 0; i < n3.features.length; i++) {
+                                        var feature = n3.features[i];
+                                        var featureAttr = feature.properties;
+                                        content_popup += "" +
+                                            "<h6>Đường:" + featureAttr["tenduong"] + "</h6>"
+                                    }
+
+
+                                    if (url_diem) {
+                                        $.ajax({
+                                            type: "POST",
+                                            url: url_diem,
+                                            contentType: "application/json; charset=utf-8",
+                                            dataType: 'json',
+                                            success: function(n2) {
+                                                var content_thongtindiem = "<div>";
+
+                                                for (var i = 0; i < n2.features.length; i++) {
+                                                    var feature = n2.features[i];
+                                                    var featureAttr = feature.properties;
+                                                    content_thongtindiem += "" +
+                                                        "<h3>" + featureAttr["tenditich"] + "</h3>" +
+                                                        "<p>Thời gian xây dựng: " + featureAttr["thoiky"] + "</p>" +
+                                                        "<p>Địa chỉ: " + featureAttr["diachi"] + "</p>" +
+                                                        "<p>Mô tả: " + featureAttr["lichsuhinhthanh"] +  "</p>" +
+                                                       "<p>"+ featureAttr["hinhanh"] +" </p>" +
+                                                        "<p>Kiến trúc: " + featureAttr["kientruc"] + "</p>" +
+                                                        "<p>Thời gian hoàn thành: " + featureAttr["ngaycongnhan"] + "</p>"
+                                                    content_popup += "" +
+                                                        "<h5>Điểm du lịch: " + featureAttr["tenditich"] + "</h5>"
+
+
+                                                        
+                                                        content_popup += "" +
+                                                        "<a href="+"https://www.google.com/maps/dir/10.980761,106.674886/"+10.981386+","+106.659376+"/@10.989659,106.6377197,14z?hl=vn"+">Xem đường đến</a>"
+                                                }
+                                                content_thongtindiem += "</div>";
+
+
+
+                                                overlay.setPosition(evt.coordinate);
+                                                $("#information").html(content_thongtindiem);
+                                                $("#popup-content").html(content_popup);
+                                                var vectorSource = new ol.source.Vector({
+                                                    features: (new ol.format.GeoJSON()).readFeatures(n2)
+                                                });
+
+                                                vectorLayer.setSource(vectorSource);
+
+                                            }
+                                        });
+
+                                    }
+
+                                    overlay.setPosition(evt.coordinate);
+                                    $("#information").html(content_popup);
+                                    $("#popup-content").html(content_popup);
+                                    var vectorSource = new ol.source.Vector({
+                                        features: (new ol.format.GeoJSON()).readFeatures(n3)
+                                    });
+                                    vectorLayer.setSource(vectorSource);
+
+                                }
+                            });
+
+                        }
+                        content_popup += "</div>";
+
+                        $("#information").html(content_popup);
+                        $("#popup-content").html(content_popup);
+                        overlay.setPosition(evt.coordinate);
+                        var vectorSource = new ol.source.Vector({
+                            features: (new ol.format.GeoJSON()).readFeatures(n1)
+                        });
+                        vectorLayer.setSource(vectorSource);
+
+
+                    }
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>
